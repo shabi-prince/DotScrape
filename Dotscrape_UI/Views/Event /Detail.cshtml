@@ -1,0 +1,55 @@
+@model Domain.Entities.Event
+
+<div class="card mb-4">
+    <div class="card-header">
+        <div class="container-fluid px-0">
+            <div class="row align-items-center position-relative">
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h5 class="mb-0">Detail</h5>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row justify-content-between align-items-center">
+            <div class="col">
+                <div class="row align-items-center">
+                    @if (Model.CoverPicture != null)
+                    {
+                        <img width="100" height="250" src="@Model.CoverPicture" />
+                    }
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <b>Community : </b>@Model.Community.Name
+                                </td>
+                                <td>
+                                    <b>Name : </b>@Model.Name
+                                </td>
+                                <td>
+                                    <b>Status : </b>@Model.Status
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>Date&Time : </b>@Model.EventDateTime
+                                </td>
+                                <td colspan="2">
+                                    <b>Address : </b>@Model.Address
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3">
+                                    <b>Description : </b>@Model.LongDescription
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <a asp-controller="Event" asp-action="Index" type="button" class="btn text-white col-1" style="margin-left: auto; background-color: #2A3F54; margin-right: 18px;">Back</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
