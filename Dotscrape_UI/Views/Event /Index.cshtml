@@ -1,0 +1,165 @@
+@model IEnumerable<Domain.Entities.Event>
+
+@if (TempData["Error"] != null)
+{
+    <script>alert('@TempData["Error"]');</script>
+
+
+}
+@*<link href="~/css/smoothness/jquery-ui-1.9.0.custom.css" rel="stylesheet" />*@
+@*<link href="~/lib/jqueryui/jquery-ui.min.css" rel="stylesheet" />
+    <script src="~/lib/jqueryui/jquery-ui.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.js"></script>*@
+@*<div class="preloader hideElement"></div>
+    <span id="preloadertext" class="hideElement" style="margin-top: 24%; margin-left: 45%; position: absolute; color: darkblue; z-index:1000;"><b>Loading..</b></span>*@
+<div id="bar-wrapper" class="progressbar-wrapper">
+    <div id="progressBar" class="percentage-progressbar">
+    </div>
+    <b><label style="color: darkblue;" id="completeCount"></label></b>
+</div>
+<div id="eventscard" class="card card-wrapper mb-4">
+    <div class="card-header">
+        <div class="container-fluid px-0">
+            <div class="row align-items-center position-relative">
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h5 class="mb-0">Events</h5>
+                </div>
+                <div class="col-md-8 text-md-end">
+                    <a class="btn text-white" style="background-color: #2A3F54;" asp-controller="Event" asp-action="ApproveAllPendingEvents"> Approve All Pending Events</a>
+                    <a class="btn text-white" id="EventsScrapper" style="background-color: #2A3F54;" onclick="ScrapData()"> Scrap Events Now</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <div class="row justify-content-between align-items-center">
+            <div class="col">
+                <div class="row align-items-center">
+                    <table class="table tableDt">
+                        <thead>
+                            <tr>
+                                <th>
+                                    Community
+                                </th>
+                                <th>
+                                    Name
+                                </th>
+                                <th>
+                                    Address
+                                </th>
+                                <th>
+                                    Description
+                                </th>
+                                <th>
+                                    Status
+                                </th>
+                                <th>
+                                    Date&Time
+                                </th>
+                                <th>CoverPicture</th>
+                                <th class="all">Axns</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        @item.Community.Name
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Name)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Address)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.ShortDescription)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Status)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.EventDateTime)
+                                    </td>
+                                    <td>
+                                        @if (item.CoverPicture != null)
+                                        {
+                                            <img height="100" width="100" src="@item.CoverPicture" />
+                                        }
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <a style="cursor:pointer;" asp-action="ApproveeStatus" asp-route-id="@item.id"><i class="fas fa-check text-success"></i></a>
+                                            <a style="cursor:pointer;" asp-action="DenyyStatus" asp-route-id="@item.id"><i class="fas fa-times text-danger"></i></a>
+                                            <a style="cursor:pointer;" asp-action="Detail" asp-route-id="@item.id"><i class="fas fa-eye text-dark"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script>
+    var communityIndex = 0;
+    function ScrapData() {
+        
+        $.ajax({
+            type: 'GET',
+            url: "/Community/GetAllCommunities",
+
+            beforeSend: function () {
+                $("#progressBar").progressbar(0);
+                $("#completeCount").text("0%");
+            },
+            success: function (data) {
+                var totalRecords = data.length;
+                //$.each(data, function (index, com) {
+                    //var communityIndex = index + 1;
+                    //var progressbarPercentage = parseInt(communityIndex / totalRecords * 100);
+                    ScrapEvents(data, totalRecords);
+                //});
+                communityIndex = 0;
+            },
+            error: function (err) {
+                alert("Something went wrong!");
+            }
+        });
+
+    }
+   
+    function ScrapEvents(CommunityList, totalrecords) {
+        //CommunityList[communityIndex];
+        function NextCommunity(CurrentCommunity) {
+            $.ajax({
+                type: 'GET',
+                url: "/Event/ScrapEvents?url=" + CurrentCommunity.url + "&id=" + CurrentCommunity.id,
+
+                success: function (data) {
+                    //console.log(CommunityList[communityIndex]);
+                    ++communityIndex;
+                    var percentage = parseInt(communityIndex / totalrecords * 100);
+                    updateProgress(percentage);
+                    NextCommunity(CommunityList[communityIndex]);
+                },
+                error: function (err) {
+                    alert("Something went wrong!");
+                    ++communityIndex;
+                    var percentage = parseInt(communityIndex / totalrecords * 100);
+                    updateProgress(percentage);
+                    NextCommunity(CommunityList[communityIndex]);
+                }
+            });
+        }
+        return NextCommunity(CommunityList[communityIndex]);
+    }
+</script>
